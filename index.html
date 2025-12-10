@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTec Data - Dashboard de Educación Técnica</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Personalización de scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900 overflow-hidden h-screen flex">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out flex flex-col h-full">
+        <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">EduTec Data</h1>
+                <p class="text-xs text-slate-400 mt-1">Observatorio Técnico</p>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <nav class="p-4 space-y-2 flex-1">
+            <button onclick="switchTab('panorama')" id="btn-panorama" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 bg-blue-600 text-white">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span class="font-medium">Resumen Ejecutivo</span>
+            </button>
+            <button onclick="switchTab('especialidades')" id="btn-especialidades" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 text-slate-400 hover:bg-slate-800 hover:text-white">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <span class="font-medium">Especialidades</span>
+            </button>
+            <button onclick="switchTab('empleabilidad')" id="btn-empleabilidad" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 text-slate-400 hover:bg-slate-800 hover:text-white">
+                <i data-lucide="briefcase" class="w-5 h-5"></i>
+                <span class="font-medium">Inserción Laboral</span>
+            </button>
+        </nav>
+
+        <div class="p-6 border-t border-slate-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center font-bold text-xs text-white">
+                    AD
+                </div>
+                <div>
+                    <p class="text-sm font-medium">Admin Usuario</p>
+                    <p class="text-xs text-slate-500">Ministerio Educación</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 shrink-0">
+            <div class="flex items-center">
+                <button onclick="toggleSidebar()" class="mr-4 lg:hidden p-2 hover:bg-slate-100 rounded-md text-slate-600">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <h2 id="header-title" class="text-lg font-semibold text-slate-700">Resumen Ejecutivo</h2>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <span class="text-xs font-medium bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
+                    Año Lectivo: 2023
+                </span>
+                <span class="text-xs text-slate-400 hidden sm:inline">
+                    Última actualización: Dic 10
+                </span>
+            </div>
+        </header>
+
+        <!-- Dashboard Content Container -->
+        <div class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50">
+            <div class="max-w-7xl mx-auto pb-10">
+
+                <!-- VISTA 1: PANORAMA (Resumen Ejecutivo) -->
+                <div id="view-panorama" class="fade-in block">
+                    <!-- KPI Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <!-- Card 1 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-slate-500 mb-1">Matrícula Total</p>
+                                    <h3 class="text-2xl font-bold text-slate-800">52,000</h3>
+                                </div>
+                                <div class="p-2 rounded-lg text-blue-600 bg-blue-600 bg-opacity-10">
+                                    <i data-lucide="users" class="w-5 h-5"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-emerald-600 flex items-center font-medium">
+                                    <i data-lucide="arrow-up-right" class="w-4 h-4 mr-1"></i> +8.3%
+                                </span>
+                                <span class="text-slate-400 ml-2">vs. año anterior</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-slate-500 mb-1">Tasa de Graduación</p>
+                                    <h3 class="text-2xl font-bold text-slate-800">68.5%</h3>
+                                </div>
+                                <div class="p-2 rounded-lg text-emerald-600 bg-emerald-600 bg-opacity-10">
+                                    <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-emerald-600 flex items-center font-medium">
+                                    <i data-lucide="arrow-up-right" class="w-4 h-4 mr-1"></i> +2.1%
+                                </span>
+                                <span class="text-slate-400 ml-2">vs. año anterior</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-slate-500 mb-1">Instituciones</p>
+                                    <h3 class="text-2xl font-bold text-slate-800">142</h3>
+                                </div>
+                                <div class="p-2 rounded-lg text-violet-600 bg-violet-600 bg-opacity-10">
+                                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-slate-500 flex items-center font-medium">
+                                    0.0%
+                                </span>
+                                <span class="text-slate-400 ml-2">vs. año anterior</span>
+                            </div>
+                        </div>
+
+                        <!-- Card 4 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-slate-500 mb-1">Inserción Laboral</p>
+                                    <h3 class="text-2xl font-bold text-slate-800">72%</h3>
+                                </div>
+                                <div class="p-2 rounded-lg text-amber-600 bg-amber-600 bg-opacity-10">
+                                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex items-center text-sm">
+                                <span class="text-rose-600 flex items-center font-medium">
+                                    <i data-lucide="arrow-down-right" class="w-4 h-4 mr-1"></i> -1.5%
+                                </span>
+                                <span class="text-slate-400 ml-2">vs. año anterior</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Area Chart -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 lg:col-span-2">
+                            <div class="mb-6">
+                                <h2 class="text-xl font-bold text-slate-800">Evolución de la Matrícula</h2>
+                                <p class="text-slate-500 text-sm mt-1">Comparativo anual por género</p>
+                            </div>
+                            <div class="h-72 w-full relative">
+                                <canvas id="matriculaChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Pie Chart -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <div class="mb-6">
+                                <h2 class="text-xl font-bold text-slate-800">Destino Egresados</h2>
+                                <p class="text-slate-500 text-sm mt-1">Situación a los 12 meses</p>
+                            </div>
+                            <div class="h-64 w-full relative flex items-center justify-center">
+                                <canvas id="destinoChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA 2: ESPECIALIDADES -->
+                <div id="view-especialidades" class="hidden fade-in">
+                     <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                                <div>
+                                    <h2 class="text-xl font-bold text-slate-800">Distribución por Especialidad y Género</h2>
+                                    <p class="text-slate-500 text-sm">Análisis de la brecha de género en carreras técnicas</p>
+                                </div>
+                            </div>
+                            <div class="h-96 w-full relative">
+                                <canvas id="especialidadChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cards Stats per Major -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="especialidad-cards">
+                        <!-- Cards will be injected by JS -->
+                    </div>
+                </div>
+
+                <!-- VISTA 3: EMPLEABILIDAD -->
+                <div id="view-empleabilidad" class="hidden fade-in">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+                        <div class="mb-6">
+                            <h2 class="text-xl font-bold text-slate-800">Relación: Tasa de Empleo vs. Salario Inicial</h2>
+                            <p class="text-slate-500 text-sm mt-1">Comparativa de inserción y remuneración por sector</p>
+                        </div>
+                        <div class="h-96 w-full relative">
+                            <canvas id="empleoChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Highlight Card -->
+                        <div class="rounded-xl shadow-sm border border-slate-200 p-5 bg-gradient-to-br from-indigo-600 to-blue-700 text-white border-none">
+                            <div class="flex flex-col h-full justify-center p-4">
+                                <h3 class="text-lg font-semibold opacity-90">Especialidad con Mayor Demanda</h3>
+                                <p class="text-4xl font-bold mt-2">Informática</p>
+                                <div class="mt-4 flex items-center text-indigo-100">
+                                    <i data-lucide="trending-up" class="mr-2 w-5 h-5"></i>
+                                    <span>Crecimiento del 15% anual en solicitudes.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- List Card -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">Desafíos de Vinculación</h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-center text-sm text-slate-600">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                                    Baja inserción formal en sector Construcción.
+                                </li>
+                                <li class="flex items-center text-sm text-slate-600">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
+                                    Brecha salarial de género persiste en Electromecánica.
+                                </li>
+                                <li class="flex items-center text-sm text-slate-600">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                                    Necesidad de actualizar currícula en Administración.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- 1. DATOS ---
+        const matriculaData = {
+            years: ['2019', '2020', '2021', '2022', '2023'],
+            total: [45000, 46500, 44000, 48000, 52000],
+            mujeres: [18000, 19200, 18500, 21000, 24000]
+        };
+
+        const especialidadData = [
+            { name: 'Informática', mujeres: 3500, hombres: 4500, total: 8000 },
+            { name: 'Electromecánica', mujeres: 800, hombres: 5200, total: 6000 },
+            { name: 'Construcción', mujeres: 1200, hombres: 3800, total: 5000 },
+            { name: 'Química/Alimentos', mujeres: 3000, hombres: 2100, total: 5100 },
+            { name: 'Administración', mujeres: 4100, hombres: 1500, total: 5600 },
+            { name: 'Agropecuaria', mujeres: 1500, hombres: 2500, total: 4000 },
+        ];
+
+        const empleoData = {
+            labels: ['Informática', 'Electromec.', 'Construcción', 'Química', 'Admin.', 'Agro.'],
+            tasaEmpleo: [85, 78, 65, 70, 60, 82],
+            salarioPromedio: [650, 580, 500, 550, 450, 520]
+        };
+
+        const destinoData = [45, 30, 15, 10]; // Trabaja sector, Estudia, Otro sector, Ni ni
+
+        // --- 2. LOGICA DE UI (Tabs & Sidebar) ---
+        const views = {
+            'panorama': 'Resumen Ejecutivo',
+            'especialidades': 'Especialidades y Género',
+            'empleabilidad': 'Inserción Laboral'
+        };
+
+        function switchTab(tabId) {
+            // Update Title
+            document.getElementById('header-title').innerText = views[tabId];
+            
+            // Hide all views
+            Object.keys(views).forEach(key => {
+                document.getElementById(`view-${key}`).classList.add('hidden');
+                document.getElementById(`view-${key}`).classList.remove('block');
+                
+                // Reset buttons
+                const btn = document.getElementById(`btn-${key}`);
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+            });
+
+            // Show active view
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            document.getElementById(`view-${tabId}`).classList.add('block');
+
+            // Active button style
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.classList.remove('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+
+            // Close sidebar on mobile if open
+            if(window.innerWidth < 1024) {
+                toggleSidebar(false);
+            }
+        }
+
+        function toggleSidebar(forceState) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            const newState = forceState !== undefined ? forceState : !isOpen;
+
+            if (newState) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // --- 3. GENERACIÓN DE TARJETAS DINÁMICAS ---
+        function renderSpecialtyCards() {
+            const container = document.getElementById('especialidad-cards');
+            let html = '';
+            
+            especialidadData.forEach(esp => {
+                const pctMujeres = Math.round((esp.mujeres / esp.total) * 100);
+                const pctHombres = 100 - pctMujeres;
+                
+                html += `
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col justify-center items-center">
+                    <h4 class="font-semibold text-slate-700">${esp.name}</h4>
+                    <div class="w-full bg-slate-100 rounded-full h-4 mt-3 overflow-hidden relative flex">
+                        <div class="bg-pink-500 h-full" style="width: ${pctMujeres}%"></div>
+                        <div class="bg-blue-500 h-full" style="width: ${pctHombres}%"></div>
+                    </div>
+                    <div class="flex justify-between w-full text-xs mt-2 text-slate-500 font-medium">
+                        <span>${pctMujeres}% Mujeres</span>
+                        <span>${pctHombres}% Hombres</span>
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- 4. INICIALIZACIÓN DE GRÁFICOS (Chart.js) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Icons
+            lucide.createIcons();
+            
+            // Render Cards
+            renderSpecialtyCards();
+
+            // Config Defaults
+            Chart.defaults.font.family = "'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'";
+            Chart.defaults.color = '#64748b';
+
+            // 1. AREA CHART (Matrícula)
+            const ctxMatricula = document.getElementById('matriculaChart').getContext('2d');
+            new Chart(ctxMatricula, {
+                type: 'line',
+                data: {
+                    labels: matriculaData.years,
+                    datasets: [
+                        {
+                            label: 'Total Estudiantes',
+                            data: matriculaData.total,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Mujeres',
+                            data: matriculaData.mujeres,
+                            borderColor: '#ec4899',
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: false, grid: { borderDash: [2, 2] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. PIE CHART (Destino)
+            const ctxDestino = document.getElementById('destinoChart').getContext('2d');
+            new Chart(ctxDestino, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Trabaja en sector', 'Estudia Superior', 'Trabaja otro sector', 'Ni estudia ni trabaja'],
+                    datasets: [{
+                        data: destinoData,
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // 3. BAR CHART (Especialidades Stacked)
+            const ctxEspecialidad = document.getElementById('especialidadChart').getContext('2d');
+            new Chart(ctxEspecialidad, {
+                type: 'bar',
+                data: {
+                    labels: especialidadData.map(d => d.name),
+                    datasets: [
+                        {
+                            label: 'Mujeres',
+                            data: especialidadData.map(d => d.mujeres),
+                            backgroundColor: '#ec4899',
+                            borderRadius: {topLeft: 4, bottomLeft: 4}
+                        },
+                        {
+                            label: 'Hombres',
+                            data: especialidadData.map(d => d.hombres),
+                            backgroundColor: '#3b82f6',
+                            borderRadius: {topRight: 4, bottomRight: 4}
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { display: false } }
+                    },
+                    plugins: {
+                        tooltip: { mode: 'index', intersect: false }
+                    }
+                }
+            });
+
+            // 4. MIXED CHART (Empleo vs Salario)
+            const ctxEmpleo = document.getElementById('empleoChart').getContext('2d');
+            new Chart(ctxEmpleo, {
+                type: 'bar',
+                data: {
+                    labels: empleoData.labels,
+                    datasets: [
+                        {
+                            label: 'Tasa Empleo (%)',
+                            data: empleoData.tasaEmpleo,
+                            backgroundColor: '#3b82f6',
+                            order: 2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Salario Promedio ($)',
+                            data: empleoData.salarioPromedio,
+                            borderColor: '#10b981',
+                            backgroundColor: '#10b981',
+                            type: 'line',
+                            order: 1,
+                            yAxisID: 'y1',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Tasa de Empleo (%)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'Salario (USD)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
